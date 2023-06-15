@@ -40,4 +40,25 @@
       To create a production bundle, use `npm run build` or `yarn build`.
     -->
   </body>
+  <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              yellow: "#FFB556",
+             orange: "#CE762B",
+              purple: "#BC95C5",
+              green: "#49FF88",
+              darkgreen:"#1CE35F"
+              
+            },
+            backgroundImage: {
+              "bg-img": "url('./images/images/bg.jpg')",
+              "login-img": "url('/assets/loginbg.png')",
+            },
+          },
+        },
+      };
+    </script>
 </html>
