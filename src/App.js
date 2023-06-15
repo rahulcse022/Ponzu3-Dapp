@@ -1,4 +1,6 @@
 import { MdOutlineSwapVert} from 'react-icons/md';
+import Swal from "sweetalert2";
+import HashLoader from "react-spinners/HashLoader";
 import { useState, useEffect } from 'react';
 import { ethers } from 'ethers';
 import { useAccount, useDisconnect } from 'wagmi'
@@ -11,10 +13,9 @@ import './App.css';
 import connectContract, {contract} from './connectContract';
 const chains = [polygonMumbai, mainnet, polygon]
 const projectId = 'e5ee2dc4de76240fc63dcea932f9ad42'
-console.log(projectId);
 const { publicClient } = configureChains(chains, [w3mProvider({ projectId })])
 const wagmiConfig = createConfig({
-  autoConnect: false,
+  autoConnect: true,
   connectors: w3mConnectors({ projectId, version: 1, chains }),
   publicClient
 })
@@ -26,40 +27,96 @@ function App() {
   const { isOpen, open, close, setDefaultChain } = useWeb3Modal()
   const [value1, setValue1] = useState();
   const [value2, setValue2] = useState();
-  const [rate, setRate] = useState(0);
+  const [token, setToken] = useState();
+  const [totalEth, setTotalEth] = useState(0);
+  const [chainId, setChainId] = useState();
+  const [txnLoading, setTxnLoading] = useState(false);
 
-  async function getRate() {
-    if(rate===0)
+  async function totalETH() {
+    if(totalEth===0)
     {
          try {
-         const rate = await contract.tokensPerEth();
-         setRate(rate.toNumber());
-         console.log("rate : ", rate.toNumber());
+         const eth = await contract.totalETH();
+         setTotalEth(eth.toNumber());
+         console.log("total ether : ", eth.toNumber());
     } catch (error) {
          console.log("error : ", error);
     }}
   }
-  getRate();
+  useEffect(()=>{
+    totalETH();
+  },[])
 
+  useEffect(() => {
+    const { ethereum } = window;
+    const checkChain = async() =>{
+         const chainId = await ethereum.request({ method: 'eth_chainId' });
+         setChainId(chainId);
+         if(chainId!=="0x13881"){
+              Swal.fire({
+                   icon: "error",
+                   title: "Wrong Network",
+                   text: "Please connect to Mumbai Testnet",
+              });
+              
+         }
+    }
+    checkChain();
+    window.ethereum.on('chainChanged', (chainId) => {
+         checkChain();
+    });
+},[address])
+
+  async function getToken(){
+    try {
+      
+        const token =  await contract.Eth_To_Token((totalEth),(ethers.utils.parseEther(value1)));
+        
+        setToken(token/10**18);
+    }catch (error) {
+         console.log("error : ", error);
+    }
+
+  }
+  getToken();
    //handle input
   function handleValue1(event){
     const newValue = event.target.value;
     setValue1(newValue);
-    setValue2(newValue*rate);
+    setValue2(token);
   }
-  function handleValue2(event){
-    const newValue = event.target.value;
-    setValue2(newValue);
-    setValue1(newValue/rate);
-  }
+  // function handleValue2(event){
+  //   const newValue = event.target.value;
+  //   setValue2(newValue);
+  //   setValue1(String(newValue/rate));
+  // }
 
   async function swap(){
-    try {
-      const tx = await contract.swap({value: ethers.utils.parseEther(value1)});
-      await tx.wait();
-      console.log("tx : ", tx);
-    } catch (error) {
-      console.log("error : ", error);
+    setTxnLoading(true);
+    if(chainId!=="0x13881"){
+      setTxnLoading(false);
+      Swal.fire({
+           icon: "error",
+           title: "Wrong Network",
+           text: "Please connect to Mumbai Testnet",
+      });
+    }
+    else{
+      try {
+        const tx = await contract.swap({value: ethers.utils.parseEther(value1)});
+        await tx.wait();
+        setTxnLoading(false);
+        Swal.fire({
+          icon: "success",
+          title: "Transaction Sucessful",
+          text: `You got ${value2} PONZU3`,
+          footer: `<a href="https://mumbai.polygonscan.com/tx/${tx.hash}" target="_blank">Check the transaction hash on Ethersan</a>`,
+        });
+        console.log("tx : ", tx);
+      } catch (error) {
+        setTxnLoading(false);
+        console.log("error : ", error);
+      }
     }
   }
 
@@ -120,9 +177,6 @@ function App() {
             type="text"
             value={value2}
             placeholder='0'
-            onChange={(event) =>
-              handleValue2(event)
-            }
            className='max-w-[400px] w-full'
           />
  <p className='border border-4 rounded-lg border-purple px-1  font-bold'>PONZU3</p>
@@ -131,8 +185,13 @@ function App() {
         </div>
 
         <div className="text-center">
+          {txnLoading ?<div className='flex justify-center'><HashLoader
+            color="#49FF88"
+            loading = {txnLoading}
+          /></div>:
           <button className="bg-green px-[4rem]  border-darkgreen  border-4 font-bold text-2xl py-2 rounded-lg" onClick={swap}> SWAP</button>
-        </div>
+          }
+          </div>
         <p className="text-white  text-center py-4 text-3xl">
           Your PONZU3 is balance of 0.0 is now worth{" "}
           <span className="text-green font-bold">0.0 Eth </span>

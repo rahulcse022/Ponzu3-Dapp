@@ -1,7 +1,7 @@
 import { ethers } from "ethers";
 let contract;
 const connectContract = async () => {
-     const Address = "0x4990edc6591F3E7e288501AAf0c6631442E26068";
+     const Address = "0xA9a249B6aaf904081a51FCDFcf6D8743A7e64a20";
      const Abi = [
           {
                "inputs": [],
@@ -137,35 +137,10 @@ const connectContract = async () => {
                "type": "function"
           },
           {
-               "inputs": [
-                    {
-                         "internalType": "address",
-                         "name": "to",
-                         "type": "address"
-                    },
-                    {
-                         "internalType": "uint256",
-                         "name": "amount",
-                         "type": "uint256"
-                    }
-               ],
-               "name": "mint",
-               "outputs": [],
-               "stateMutability": "nonpayable",
-               "type": "function"
-          },
-          {
                "inputs": [],
                "name": "swap",
                "outputs": [],
                "stateMutability": "payable",
-               "type": "function"
-          },
-          {
-               "inputs": [],
-               "name": "swapBack",
-               "outputs": [],
-               "stateMutability": "nonpayable",
                "type": "function"
           },
           {
@@ -366,6 +341,96 @@ const connectContract = async () => {
                "type": "function"
           },
           {
+               "inputs": [
+                    {
+                         "internalType": "uint256",
+                         "name": "_totalETH",
+                         "type": "uint256"
+                    },
+                    {
+                         "internalType": "uint256",
+                         "name": "_eth",
+                         "type": "uint256"
+                    }
+               ],
+               "name": "Eth_To_Token",
+               "outputs": [
+                    {
+                         "internalType": "uint256",
+                         "name": "",
+                         "type": "uint256"
+                    }
+               ],
+               "stateMutability": "view",
+               "type": "function"
+          },
+          {
+               "inputs": [
+                    {
+                         "internalType": "uint256",
+                         "name": "_totalETH",
+                         "type": "uint256"
+                    },
+                    {
+                         "internalType": "uint256",
+                         "name": "_ethSend",
+                         "type": "uint256"
+                    }
+               ],
+               "name": "get3Value",
+               "outputs": [
+                    {
+                         "internalType": "uint256",
+                         "name": "_pre",
+                         "type": "uint256"
+                    },
+                    {
+                         "internalType": "uint256",
+                         "name": "_main",
+                         "type": "uint256"
+                    },
+                    {
+                         "internalType": "uint256",
+                         "name": "_post",
+                         "type": "uint256"
+                    }
+               ],
+               "stateMutability": "pure",
+               "type": "function"
+          },
+          {
+               "inputs": [
+                    {
+                         "internalType": "uint256",
+                         "name": "_n",
+                         "type": "uint256"
+                    }
+               ],
+               "name": "getSwappingRate",
+               "outputs": [
+                    {
+                         "internalType": "uint256",
+                         "name": "",
+                         "type": "uint256"
+                    }
+               ],
+               "stateMutability": "view",
+               "type": "function"
+          },
+          {
+               "inputs": [],
+               "name": "InitialSwapingRate",
+               "outputs": [
+                    {
+                         "internalType": "uint256",
+                         "name": "",
+                         "type": "uint256"
+                    }
+               ],
+               "stateMutability": "view",
+               "type": "function"
+          },
+          {
                "inputs": [],
                "name": "name",
                "outputs": [
@@ -406,32 +471,6 @@ const connectContract = async () => {
           },
           {
                "inputs": [],
-               "name": "tokenDecrement",
-               "outputs": [
-                    {
-                         "internalType": "uint256",
-                         "name": "",
-                         "type": "uint256"
-                    }
-               ],
-               "stateMutability": "view",
-               "type": "function"
-          },
-          {
-               "inputs": [],
-               "name": "tokensPerEth",
-               "outputs": [
-                    {
-                         "internalType": "uint256",
-                         "name": "",
-                         "type": "uint256"
-                    }
-               ],
-               "stateMutability": "view",
-               "type": "function"
-          },
-          {
-               "inputs": [],
                "name": "totalETH",
                "outputs": [
                     {
@@ -446,19 +485,6 @@ const connectContract = async () => {
           {
                "inputs": [],
                "name": "totalSupply",
-               "outputs": [
-                    {
-                         "internalType": "uint256",
-                         "name": "",
-                         "type": "uint256"
-                    }
-               ],
-               "stateMutability": "view",
-               "type": "function"
-          },
-          {
-               "inputs": [],
-               "name": "totalTokens",
                "outputs": [
                     {
                          "internalType": "uint256",
