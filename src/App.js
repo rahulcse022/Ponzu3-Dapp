@@ -11,6 +11,7 @@ import { configureChains, createConfig, WagmiConfig } from 'wagmi'
 import { polygonMumbai, mainnet, polygon } from 'wagmi/chains'
 import './App.css';
 import connectContract, {contract} from './connectContract';
+import PopupModal from './components/modal';
 const chains = [polygonMumbai, mainnet, polygon]
 const projectId = 'e5ee2dc4de76240fc63dcea932f9ad42'
 const { publicClient } = configureChains(chains, [w3mProvider({ projectId })])
@@ -19,10 +20,11 @@ const wagmiConfig = createConfig({
   connectors: w3mConnectors({ projectId, version: 1, chains }),
   publicClient
 })
-const ethereumClient = new EthereumClient(wagmiConfig, chains)
+const ethereumClient = new EthereumClient(wagmiConfig, chains);
+
 
 function App() {
-  connectContract();
+  
   const { address, isConnected,isConnecting, isDisconnected } = useAccount()
   const { isOpen, open, close, setDefaultChain } = useWeb3Modal()
   const [value1, setValue1] = useState();
@@ -31,7 +33,13 @@ function App() {
   const [totalEth, setTotalEth] = useState(0);
   const [chainId, setChainId] = useState();
   const [txnLoading, setTxnLoading] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
+  useEffect(() => {
+    if (isConnected) {
+      connectContract();
+    }
+  },[])
   async function totalETH() {
     if(totalEth===0)
     {
@@ -44,11 +52,13 @@ function App() {
     }}
   }
   useEffect(()=>{
-    totalETH();
+    if (isConnected) {
+      totalETH();
+    }
   },[])
 
   useEffect(() => {
-    const { ethereum } = window;
+    const {ethereum} = window;
     const checkChain = async() =>{
          const chainId = await ethereum.request({ method: 'eth_chainId' });
          setChainId(chainId);
@@ -61,16 +71,15 @@ function App() {
               
          }
     }
-    checkChain();
-    window.ethereum.on('chainChanged', (chainId) => {
-         checkChain();
-    });
+    if(isConnected)
+    {checkChain();}
+    
 },[address])
 
   async function getToken(){
     try {
-      
-        const token =  await contract.Eth_To_Token((totalEth),(ethers.utils.parseEther(value1)));
+
+        const token =  await contract.swapConvert((totalEth.toString()),(ethers.utils.parseEther(value1)));
         
         setToken(token/10**18);
     }catch (error) {
@@ -78,18 +87,22 @@ function App() {
     }
 
   }
+  if(isConnected){
   getToken();
+  }
    //handle input
   function handleValue1(event){
     const newValue = event.target.value;
     setValue1(newValue);
     setValue2(token);
   }
-  // function handleValue2(event){
-  //   const newValue = event.target.value;
-  //   setValue2(newValue);
-  //   setValue1(String(newValue/rate));
-  // }
+  const handleModalOpen = () => {
+    setIsModalOpen(true);
+  };
+
+  const handleModalClose = () => {
+    setIsModalOpen(false);
+  };
 
   async function swap(){
     setTxnLoading(true);
@@ -109,7 +122,7 @@ function App() {
         Swal.fire({
           icon: "success",
           title: "Transaction Sucessful",
-          text: `You got ${value2} PONZU3`,
+          text: `You got ${value1}ETH worth PONZU3`,
           footer: `<a href="https://mumbai.polygonscan.com/tx/${tx.hash}" target="_blank">Check the transaction hash on Ethersan</a>`,
         });
         console.log("tx : ", tx);
@@ -119,7 +132,7 @@ function App() {
       }
     }
   }
-
+  
   return (
     <div className="App">
       <div>
@@ -163,23 +176,24 @@ function App() {
             }
            className='max-w-[400px] w-full'
           />
- <p className='border border-4 rounded-lg border-purple px-1 font-bold min-w-[70px] text-center'>Eth</p>
+ <p className='border border-4 rounded-lg border-purple px-1 font-bold min-w-[70px] text-center'>ETH</p>
           </div>
          
 
          
           <div className="absolute top-[24%] left-[44%] z-50  bg-white">
-           <MdOutlineSwapVert size={40} className="border-4 border-black  rounded-lg"/>
+           
           </div>
-
+ 
           <div className=" flex jsutify-between border-4 px-4  border-purple relative rounded-lg  w-full bg-white focus-0 mb-3  mx-auto py-1">
           <input
             type="text"
             value={value2}
             placeholder='0'
            className='max-w-[400px] w-full'
+           readOnly={true}
           />
- <p className='border border-4 rounded-lg border-purple px-1  font-bold'>PONZU3</p>
+ <p className='border border-4 rounded-lg border-purple px-1  font-bold min-w-[70px] text-center'>PONZU3</p>
           </div>
          
         </div>
@@ -189,7 +203,15 @@ function App() {
             color="#49FF88"
             loading = {txnLoading}
           /></div>:
-          <button className="bg-green px-[4rem]  border-darkgreen  border-4 font-bold text-2xl py-2 rounded-lg" onClick={swap}> SWAP</button>
+          <div className='flex-direction-coloumn justify-center '>
+          <button className="bg-green px-[4rem]  border-darkgreen  border-4 font-bold text-2xl py-2 rounded-lg my-3" onClick={swap}> SWAP</button>
+          <button className="bg-green px-[4rem]  border-darkgreen  border-4 font-bold text-2xl py-2 rounded-lg"onClick={handleModalOpen}> SWAP BACK</button>
+          {isModalOpen && (
+            <div className="modal-overlay">
+              <PopupModal onClose={handleModalClose} account={address} />
+            </div>
+          )}
+          </div>
           }
           </div>
         <p className="text-white  text-center py-4 text-3xl">

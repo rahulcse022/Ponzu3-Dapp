@@ -1,8 +1,8 @@
 import { ethers } from "ethers";
 let contract;
 const connectContract = async () => {
-     const Address = "0xA9a249B6aaf904081a51FCDFcf6D8743A7e64a20";
-     const Abi = [
+     const Address = "0xD021dD9e0D90870CF3bF4e74b2Fc8EA09514E32A";
+     const Abi =[
           {
                "inputs": [],
                "stateMutability": "nonpayable",
@@ -141,6 +141,19 @@ const connectContract = async () => {
                "name": "swap",
                "outputs": [],
                "stateMutability": "payable",
+               "type": "function"
+          },
+          {
+               "inputs": [
+                    {
+                         "internalType": "uint256",
+                         "name": "_index",
+                         "type": "uint256"
+                    }
+               ],
+               "name": "swapBack",
+               "outputs": [],
+               "stateMutability": "nonpayable",
                "type": "function"
           },
           {
@@ -324,49 +337,6 @@ const connectContract = async () => {
           {
                "inputs": [
                     {
-                         "internalType": "address",
-                         "name": "",
-                         "type": "address"
-                    }
-               ],
-               "name": "depositTimestamps",
-               "outputs": [
-                    {
-                         "internalType": "uint256",
-                         "name": "",
-                         "type": "uint256"
-                    }
-               ],
-               "stateMutability": "view",
-               "type": "function"
-          },
-          {
-               "inputs": [
-                    {
-                         "internalType": "uint256",
-                         "name": "_totalETH",
-                         "type": "uint256"
-                    },
-                    {
-                         "internalType": "uint256",
-                         "name": "_eth",
-                         "type": "uint256"
-                    }
-               ],
-               "name": "Eth_To_Token",
-               "outputs": [
-                    {
-                         "internalType": "uint256",
-                         "name": "",
-                         "type": "uint256"
-                    }
-               ],
-               "stateMutability": "view",
-               "type": "function"
-          },
-          {
-               "inputs": [
-                    {
                          "internalType": "uint256",
                          "name": "_totalETH",
                          "type": "uint256"
@@ -432,6 +402,19 @@ const connectContract = async () => {
           },
           {
                "inputs": [],
+               "name": "lockingPeriod",
+               "outputs": [
+                    {
+                         "internalType": "uint256",
+                         "name": "",
+                         "type": "uint256"
+                    }
+               ],
+               "stateMutability": "view",
+               "type": "function"
+          },
+          {
+               "inputs": [],
                "name": "name",
                "outputs": [
                     {
@@ -457,6 +440,64 @@ const connectContract = async () => {
                "type": "function"
           },
           {
+               "inputs": [
+                    {
+                         "internalType": "address",
+                         "name": "_user",
+                         "type": "address"
+                    },
+                    {
+                         "internalType": "uint256",
+                         "name": "_index",
+                         "type": "uint256"
+                    },
+                    {
+                         "internalType": "uint256",
+                         "name": "_totalETH",
+                         "type": "uint256"
+                    },
+                    {
+                         "internalType": "uint256",
+                         "name": "_TOTAL_SUPPLY",
+                         "type": "uint256"
+                    }
+               ],
+               "name": "swapBackConvert",
+               "outputs": [
+                    {
+                         "internalType": "uint256",
+                         "name": "",
+                         "type": "uint256"
+                    }
+               ],
+               "stateMutability": "view",
+               "type": "function"
+          },
+          {
+               "inputs": [
+                    {
+                         "internalType": "uint256",
+                         "name": "_totalETH",
+                         "type": "uint256"
+                    },
+                    {
+                         "internalType": "uint256",
+                         "name": "_eth",
+                         "type": "uint256"
+                    }
+               ],
+               "name": "swapConvert",
+               "outputs": [
+                    {
+                         "internalType": "uint256",
+                         "name": "",
+                         "type": "uint256"
+                    }
+               ],
+               "stateMutability": "view",
+               "type": "function"
+          },
+          {
                "inputs": [],
                "name": "symbol",
                "outputs": [
@@ -464,6 +505,19 @@ const connectContract = async () => {
                          "internalType": "string",
                          "name": "",
                          "type": "string"
+                    }
+               ],
+               "stateMutability": "view",
+               "type": "function"
+          },
+          {
+               "inputs": [],
+               "name": "TOTAL_SUPPLY",
+               "outputs": [
+                    {
+                         "internalType": "uint256",
+                         "name": "",
+                         "type": "uint256"
                     }
                ],
                "stateMutability": "view",
@@ -503,12 +557,51 @@ const connectContract = async () => {
                          "type": "address"
                     }
                ],
-               "name": "userBalances",
+               "name": "txCount",
                "outputs": [
                     {
                          "internalType": "uint256",
                          "name": "",
                          "type": "uint256"
+                    }
+               ],
+               "stateMutability": "view",
+               "type": "function"
+          },
+          {
+               "inputs": [
+                    {
+                         "internalType": "address",
+                         "name": "",
+                         "type": "address"
+                    },
+                    {
+                         "internalType": "uint256",
+                         "name": "",
+                         "type": "uint256"
+                    }
+               ],
+               "name": "userData",
+               "outputs": [
+                    {
+                         "internalType": "uint256",
+                         "name": "token",
+                         "type": "uint256"
+                    },
+                    {
+                         "internalType": "uint256",
+                         "name": "eth",
+                         "type": "uint256"
+                    },
+                    {
+                         "internalType": "uint256",
+                         "name": "time",
+                         "type": "uint256"
+                    },
+                    {
+                         "internalType": "bool",
+                         "name": "swapBack",
+                         "type": "bool"
                     }
                ],
                "stateMutability": "view",
