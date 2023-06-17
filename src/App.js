@@ -101,7 +101,16 @@ function App() {
     //setValue2(token);
   }
   const handleModalOpen = () => {
-    setIsModalOpen(true);
+    if(isConnected){
+      setIsModalOpen(true);
+    }
+    else{
+      Swal.fire({
+        icon: "error",
+        title: "Transaction Failed",
+        text: "Please connect to Metamask",
+      });
+    }
   };
 
   const handleModalClose = () => {
@@ -141,6 +150,14 @@ function App() {
         console.log("error : ", error);
       }
     }
+  }
+  else{
+    setTxnLoading(false);
+    Swal.fire({
+      icon: "error",
+      title: "Transaction Failed",
+      text: "Please connect to Metamask",
+    });
   }
   }
   

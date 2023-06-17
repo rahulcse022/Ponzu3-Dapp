@@ -53,6 +53,11 @@ const PopupModal = ({ onClose, account }) => {
         }
         console.log("item ", i, ": ", item);
       } catch (err) {
+        Swal.fire({
+          icon: "error",
+          title: "Error in fetching data",
+          text: err.reason,
+        })
         console.log(err);
       }
     }
