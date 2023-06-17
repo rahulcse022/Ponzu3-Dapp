@@ -20,9 +20,8 @@ const wagmiConfig = createConfig({
   connectors: w3mConnectors({ projectId, version: 1, chains }),
   publicClient
 })
+
 const ethereumClient = new EthereumClient(wagmiConfig, chains);
-
-
 function App() {
   
   const { address, isConnected,isConnecting, isDisconnected } = useAccount()
@@ -38,8 +37,9 @@ function App() {
   useEffect(() => {
     if (isConnected) {
       connectContract();
+      console.log("connected");
     }
-  },[])
+  },[isConnected])
   async function totalETH() {
     if(totalEth===0)
     {
@@ -77,24 +77,28 @@ function App() {
 },[address])
 
   async function getToken(){
+    let token
     try {
 
-        const token =  await contract.swapConvert((totalEth.toString()),(ethers.utils.parseEther(value1)));
+         token =  await contract.swapConvert((totalEth.toString()),(ethers.utils.parseEther(value1)));
+         
         
-        setToken(token/10**18);
     }catch (error) {
          console.log("error : ", error);
     }
-
+    setValue2(token/10**18);
   }
-  if(isConnected){
-  getToken();
-  }
+  
    //handle input
+  useEffect(()=>{
+    if (isConnected) {
+      getToken();
+    }
+  },[value1])
   function handleValue1(event){
     const newValue = event.target.value;
     setValue1(newValue);
-    setValue2(token);
+    //setValue2(token);
   }
   const handleModalOpen = () => {
     setIsModalOpen(true);
@@ -106,6 +110,7 @@ function App() {
 
   async function swap(){
     setTxnLoading(true);
+    if(isConnected){
     if(chainId!=="0x13881"){
       setTxnLoading(false);
       Swal.fire({
@@ -128,9 +133,15 @@ function App() {
         console.log("tx : ", tx);
       } catch (error) {
         setTxnLoading(false);
+        Swal.fire({
+          icon: "error",
+          title: "Transaction Failed",
+          text: error.reason||error.data.message,
+     });
         console.log("error : ", error);
       }
     }
+  }
   }
   
   return (

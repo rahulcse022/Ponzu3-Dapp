@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
+import Swal from "sweetalert2";
 import { contract } from '../connectContract';
-
+import FadeLoader from "react-spinners/FadeLoader"
+import RiseLoader from "react-spinners/RiseLoader";
 const PopupModal = ({ onClose, account }) => {
   const [selectedItem, setSelectedItem] = useState('');
   const [selectedIndex, setSelectedIndex] = useState();
@@ -8,6 +10,8 @@ const PopupModal = ({ onClose, account }) => {
   const [count, setCount] = useState(0);
   const [itemList, setItemList] = useState([]);
   const [txn, setTxn] = useState(false);
+  const [isDataLoading, setIsDataLoading] = useState(false);
+  const [isTxLoading, setIsTxLoading] = useState(false);
 
   const handleItemSelected = (item) => {
     setSelectedItem(item);
@@ -27,6 +31,7 @@ const PopupModal = ({ onClose, account }) => {
   };
 
   useEffect(() => {
+    setIsDataLoading(true);
     fetchCount();
   }, [txn]);
 
@@ -52,6 +57,7 @@ const PopupModal = ({ onClose, account }) => {
       }
     }
     setItemList(items);
+    setIsDataLoading(false);
   };
 
   useEffect(() => {
@@ -61,15 +67,23 @@ const PopupModal = ({ onClose, account }) => {
   }, [count,txn]);
 
   const handleSubmit = async() => {
+    setIsTxLoading(true);
     try {
           const token = await contract.swapBack(selectedIndex);
           await token.wait();
           console.log("token : ", token);
+          setIsTxLoading(false);
           setTxn(!txn);
     }catch (error) {
+          setIsTxLoading(false);
+          Swal.fire({
+              icon: "error",
+              title: "Transaction Failed",
+              text: error.reason,
+          });
          console.log("error : ", error);
     }
-    console.log('Submitted:', selectedItem);
+    
     setSelectedItem('');
     setIsSubmitEnabled(false);
   };
@@ -78,6 +92,14 @@ const PopupModal = ({ onClose, account }) => {
     <div className="fixed inset-0 w-500 flex items-center justify-center bg-opacity-75 bg-gray-900">
       <div className="bg-white rounded-lg p-6">
         <h2 className="text-lg font-bold mb-4">Select the transaction:</h2>
+        {isDataLoading ?
+            <div >
+            <RiseLoader 
+            color="#a8b1c3"
+            loading={isDataLoading}
+            className="my-5 mx-auto"
+            />
+            </div>:
         <table className="w-full">
           <thead>
             <tr>
@@ -86,6 +108,7 @@ const PopupModal = ({ onClose, account }) => {
               <th className="px-4 py-2">Date</th>
             </tr>
           </thead>
+          
           <tbody>
             {itemList.map((item, index) => (
               <tr key={index}
@@ -100,7 +123,15 @@ const PopupModal = ({ onClose, account }) => {
               </tr>
             ))}
           </tbody>
+        
         </table>
+        }
+        {isTxLoading?
+        <div className='flex justify-center'>
+        <FadeLoader 
+          />
+          </div>:
+        <div>
         <button
           disabled={!isSubmitEnabled}
           onClick={handleSubmit}
@@ -108,12 +139,15 @@ const PopupModal = ({ onClose, account }) => {
         >
           Swap 
         </button>
+        
         <button
           onClick={onClose}
           className="m-4  text-sm text-gray-500 hover:text-gray-700"
         >
           Close
         </button>
+        </div>
+        }
       </div>
     </div>
   );
