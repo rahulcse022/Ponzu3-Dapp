@@ -140,7 +140,7 @@ const PopupModal = ({ onClose, account }) => {
         <button
           disabled={!isSubmitEnabled}
           onClick={handleSubmit}
-          className="m-4 bg-blue-400 hover:bg-blue-600 text-white py-2 px-4 rounded"
+          className="m-4 bg-green border-darkgreen  border-4 hover:shadow-lg shadow-green text-black py-2 px-4 rounded"
         >
           Swap 
         </button>

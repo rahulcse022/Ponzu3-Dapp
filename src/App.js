@@ -186,9 +186,9 @@ function App() {
           </button>
         </div>
       </div>
-      <div className="max-w-[400px] w-full mx-auto">
-        <h1 className="text-center font-bold text-4xl text-white mt-5 capitalize ">
-          Eth Pool:
+      <div className="max-w-[400px] w-full mx-auto mt-10">
+        <h1 className="text-center font-bold text-4xl text-white capitalize ">
+          ETH POOL:
         </h1>
         <h1 className="text-center font-bold text-7xl text-white py-5 leading-8">
           0
@@ -244,7 +244,7 @@ function App() {
           </div>
         <p className="text-white  text-center py-4 text-3xl">
           Your PONZU3 is balance of 0.0 is now worth{" "}
-          <span className="text-green font-bold">0.0 Eth </span>
+          <span className="text-green font-bold">0.0  </span> Eth
         </p>
       </div>
     </div>
