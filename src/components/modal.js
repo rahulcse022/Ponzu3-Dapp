@@ -25,6 +25,10 @@ const PopupModal = ({ onClose, account }) => {
       const tx = await contract.txCount(account);
       console.log("count : ", tx.toNumber(), count);
       setCount(tx.toNumber());
+      if(tx.toNumber()===0){
+        setIsDataLoading(false);
+
+      }
     } catch (err) {
       console.log(err);
     }
