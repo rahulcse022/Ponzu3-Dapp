@@ -1,8 +1,8 @@
 import { ethers } from "ethers";
 let contract;
 const connectContract = async () => {
-     const Address = "0xD021dD9e0D90870CF3bF4e74b2Fc8EA09514E32A";
-     const Abi =[
+     const Address = "0x82923F0CaeFFd5d31ed83bcbFBa1986D14A15ce3";
+     const Abi = [
           {
                "inputs": [],
                "stateMutability": "nonpayable",
@@ -133,6 +133,13 @@ const connectContract = async () => {
                          "type": "bool"
                     }
                ],
+               "stateMutability": "nonpayable",
+               "type": "function"
+          },
+          {
+               "inputs": [],
+               "name": "safety",
+               "outputs": [],
                "stateMutability": "nonpayable",
                "type": "function"
           },
@@ -323,65 +330,25 @@ const connectContract = async () => {
           },
           {
                "inputs": [],
-               "name": "decimals",
+               "name": "contractBalance",
                "outputs": [
                     {
-                         "internalType": "uint8",
+                         "internalType": "uint256",
                          "name": "",
-                         "type": "uint8"
+                         "type": "uint256"
                     }
                ],
                "stateMutability": "view",
                "type": "function"
           },
           {
-               "inputs": [
-                    {
-                         "internalType": "uint256",
-                         "name": "_totalETH",
-                         "type": "uint256"
-                    },
-                    {
-                         "internalType": "uint256",
-                         "name": "_ethSend",
-                         "type": "uint256"
-                    }
-               ],
-               "name": "get3Value",
+               "inputs": [],
+               "name": "decimals",
                "outputs": [
                     {
-                         "internalType": "uint256",
-                         "name": "_pre",
-                         "type": "uint256"
-                    },
-                    {
-                         "internalType": "uint256",
-                         "name": "_main",
-                         "type": "uint256"
-                    },
-                    {
-                         "internalType": "uint256",
-                         "name": "_post",
-                         "type": "uint256"
-                    }
-               ],
-               "stateMutability": "pure",
-               "type": "function"
-          },
-          {
-               "inputs": [
-                    {
-                         "internalType": "uint256",
-                         "name": "_n",
-                         "type": "uint256"
-                    }
-               ],
-               "name": "getSwappingRate",
-               "outputs": [
-                    {
-                         "internalType": "uint256",
+                         "internalType": "uint8",
                          "name": "",
-                         "type": "uint256"
+                         "type": "uint8"
                     }
                ],
                "stateMutability": "view",
@@ -512,19 +479,6 @@ const connectContract = async () => {
           },
           {
                "inputs": [],
-               "name": "TOTAL_SUPPLY",
-               "outputs": [
-                    {
-                         "internalType": "uint256",
-                         "name": "",
-                         "type": "uint256"
-                    }
-               ],
-               "stateMutability": "view",
-               "type": "function"
-          },
-          {
-               "inputs": [],
                "name": "totalETH",
                "outputs": [
                     {
@@ -602,6 +556,30 @@ const connectContract = async () => {
                          "internalType": "bool",
                          "name": "swapBack",
                          "type": "bool"
+                    }
+               ],
+               "stateMutability": "view",
+               "type": "function"
+          },
+          {
+               "inputs": [
+                    {
+                         "internalType": "address",
+                         "name": "_user",
+                         "type": "address"
+                    }
+               ],
+               "name": "userTokenInfo",
+               "outputs": [
+                    {
+                         "internalType": "uint256",
+                         "name": "token",
+                         "type": "uint256"
+                    },
+                    {
+                         "internalType": "uint256",
+                         "name": "eth",
+                         "type": "uint256"
                     }
                ],
                "stateMutability": "view",
