@@ -11,9 +11,10 @@ import { configureChains, createConfig, WagmiConfig } from 'wagmi'
 import { polygonMumbai, mainnet, polygon } from 'wagmi/chains'
 import './App.css';
 import connectContract, {contract} from './connectContract';
-import PopupModal from './components/modal';
 const chains = [polygonMumbai, mainnet, polygon]
 const projectId = 'e5ee2dc4de76240fc63dcea932f9ad42'
+
+//setup the wagmi config using walletconnect web3modal
 const { publicClient } = configureChains(chains, [w3mProvider({ projectId })])
 const wagmiConfig = createConfig({
   autoConnect: false,
@@ -28,35 +29,42 @@ function App() {
   const { isOpen, open, close, setDefaultChain } = useWeb3Modal()
   const [value1, setValue1] = useState();
   const [value2, setValue2] = useState();
-  const [token, setToken] = useState();
   const [totalEth, setTotalEth] = useState(0);
   const [chainId, setChainId] = useState();
   const [txnLoading, setTxnLoading] = useState(false);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [txDone, setTxDone] = useState(false);
+  const [back,setBack] = useState(false);
+  const [userToken, setUserToken] = useState('0.0');
+  const [userEth, setUserEth] = useState('0.0');
 
+  // connect smart contract with ui
   useEffect(() => {
     if (isConnected) {
       connectContract();
       console.log("connected");
     }
   },[isConnected])
-  async function totalETH() {
-    if(totalEth===0)
-    {
-         try {
-         const eth = await contract.totalETH();
-         setTotalEth(eth.toNumber());
-         console.log("total ether : ", eth.toNumber());
+
+  //get the total ether in the contract
+  async function contractBalance() {
+    try {
+           console.log("contract balance");
+         const eth = await contract.contractBalance();
+         setTotalEth(eth.toString());
+         console.log("total ether : ", eth.toString());
     } catch (error) {
          console.log("error : ", error);
-    }}
+    }
   }
   useEffect(()=>{
     if (isConnected) {
-      totalETH();
+      contractBalance();
     }
-  },[])
+  },[isConnected,chainId,txDone,address])
+  
 
+
+  //check the chain if it is mumbai testnet
   useEffect(() => {
     const {ethereum} = window;
     const checkChain = async() =>{
@@ -73,10 +81,10 @@ function App() {
     }
     if(isConnected)
     {checkChain();}
-    
 },[address])
 
-  async function getToken(){
+  //Convert the eth into tokens 
+  async function swapConvert(){
     let token
     try {
 
@@ -89,34 +97,47 @@ function App() {
     setValue2(token/10**18);
   }
   
-   //handle input
+  
+
+  //Convert the tokens into eth
+  async function swapBackConvert(){
+    let eth;
+    try{
+      eth = await contract.swapBackConvert(ethers.utils.parseEther(value1))
+    }catch(error){
+      console.log("error : ", error);
+    }
+    setValue2(eth/10**18);
+  }
+
   useEffect(()=>{
     if (isConnected) {
-      getToken();
+      if(!back){
+        swapConvert();
+      }
+      else{
+        swapBackConvert();
+      }
     }
   },[value1])
+
+
+  //handle the value for input 1
   function handleValue1(event){
     const newValue = event.target.value;
+    setTxDone(!txDone);
     setValue1(newValue);
-    //setValue2(token);
   }
-  const handleModalOpen = () => {
-    if(isConnected){
-      setIsModalOpen(true);
-    }
-    else{
-      Swal.fire({
-        icon: "error",
-        title: "Transaction Failed",
-        text: "Please connect to Metamask",
-      });
-    }
-  };
 
-  const handleModalClose = () => {
-    setIsModalOpen(false);
-  };
+  //handle the revert button between eth and tokens
+  function handleBack(){
+    setBack(!back);
+    setTxDone(!txDone);
+    setValue1(0);
+    setValue2(0);
+  }
 
+  //swap the eth into tokens
   async function swap(){
     setTxnLoading(true);
     if(isConnected){
@@ -133,6 +154,7 @@ function App() {
         const tx = await contract.swap({value: ethers.utils.parseEther(value1)});
         await tx.wait();
         setTxnLoading(false);
+        setTxDone(!txDone);
         Swal.fire({
           icon: "success",
           title: "Transaction Sucessful",
@@ -160,7 +182,71 @@ function App() {
     });
   }
   }
+
+  //swap the tokens into eth
+  async function swapBack(){
+    console.log("value1",ethers.utils.parseEther(value1));
+    setTxnLoading(true);
+    if(isConnected){
+    if(chainId!=="0x13881"){
+      setTxnLoading(false);
+      Swal.fire({
+           icon: "error",
+           title: "Wrong Network",
+           text: "Please connect to Mumbai Testnet",
+      });
+    }
+    else{
+      try {
+        const tx = await contract.swapBack(ethers.utils.parseEther(value1));
+        await tx.wait();
+        setTxnLoading(false);
+        setTxDone(!txDone);
+        Swal.fire({
+          icon: "success",
+          title: "Transaction Sucessful",
+          text: `You got ${value2} ETH `,
+          footer: `<a href="https://mumbai.polygonscan.com/tx/${tx.hash}" target="_blank">Check the transaction hash on Etherscan</a>`,
+        });
+        console.log("tx : ", tx);
+      } catch (error) {
+        setTxnLoading(false);
+        Swal.fire({
+          icon: "error",
+          title: "Transaction Failed",
+          text: error.reason||error.data.message,
+     });
+        console.log("error : ", error);
+      }
+    }
+  }
+  else{
+    setTxnLoading(false);
+    Swal.fire({
+      icon: "error",
+      title: "Transaction Failed",
+      text: "Please connect to Metamask",
+    });
+  }
+  }
   
+  //Get users tokens details
+  async function getUserTokens(){
+    try{
+      const userData = await contract.userTokenInfo(address)
+      console.log("user data : ", userData[0].toString()/10**18, userData[1].toString()/10**18);
+      setUserToken(userData[0].toString()/10**18);
+      setUserEth(userData[1].toString()/10**18);
+    }catch(error){
+      console.log("error : ", error);
+    }
+  }
+  useEffect(()=>{
+    if(isConnected){
+      getUserTokens();
+    }
+  },[isConnected,chainId,txDone, address])
+
   return (
     <div className="App">
       <div>
@@ -190,8 +276,8 @@ function App() {
         <h1 className="text-center font-bold text-4xl text-white capitalize ">
           ETH POOL:
         </h1>
-        <h1 className="text-center font-bold text-7xl text-white py-5 leading-8">
-          0
+        <h1 className="text-center font-bold text-5xl text-white py-5 leading-8">
+          {totalEth/10**18}
         </h1>
         <div className="justify-center flex flex-col mb-5 relative">
           <div className=" flex jsutify-between border-4 px-4  border-purple relative rounded-lg  w-full bg-white focus-0 mb-3  mx-auto py-1">
@@ -204,13 +290,13 @@ function App() {
             }
            className='max-w-[400px] w-full'
           />
- <p className='border border-4 rounded-lg border-purple px-1 font-bold min-w-[70px] text-center'>ETH</p>
+ <p className='border border-4 rounded-lg border-purple px-1 font-bold min-w-[70px] text-center'>{back?"PONZU3":"ETH"}</p>
           </div>
          
 
          
           <div className="absolute top-[24%] left-[44%] z-50  bg-white">
-           
+           <MdOutlineSwapVert size={40} className="border-4 border-black  rounded-lg" onClick={handleBack}/>
           </div>
  
           <div className=" flex jsutify-between border-4 px-4  border-purple relative rounded-lg  w-full bg-white focus-0 mb-3  mx-auto py-1">
@@ -221,7 +307,7 @@ function App() {
            className='max-w-[400px] w-full'
            readOnly={true}
           />
- <p className='border border-4 rounded-lg border-purple px-1  font-bold min-w-[70px] text-center'>PONZU3</p>
+ <p className='border border-4 rounded-lg border-purple px-1  font-bold min-w-[70px] text-center'>{back?"ETH":"PONZU3"}</p>
           </div>
          
         </div>
@@ -232,19 +318,14 @@ function App() {
             loading = {txnLoading}
           /></div>:
           <div className='flex-direction-coloumn justify-center '>
-          <button className="bg-green px-[4rem]  border-darkgreen  border-4 font-bold text-2xl py-2 rounded-lg my-3" onClick={swap}> SWAP</button>
-          <button className="bg-green px-[4rem]  border-darkgreen  border-4 font-bold text-2xl py-2 rounded-lg"onClick={handleModalOpen}> SWAP BACK</button>
-          {isModalOpen && (
-            <div className="modal-overlay">
-              <PopupModal onClose={handleModalClose} account={address} />
-            </div>
-          )}
+          <button className="bg-green px-[4rem]  border-darkgreen  border-4 font-bold text-2xl py-2 rounded-lg my-3" onClick={back?swapBack:swap}> SWAP</button>
+          
           </div>
           }
           </div>
         <p className="text-white  text-center py-4 text-3xl">
-          Your PONZU3 is balance of 0.0 is now worth{" "}
-          <span className="text-green font-bold">0.0  </span> Eth
+          Your PONZU3 is balance of {userToken} is now worth{" "}
+          <span className="text-green font-bold">{userEth}  </span> Eth
         </p>
       </div>
     </div>
